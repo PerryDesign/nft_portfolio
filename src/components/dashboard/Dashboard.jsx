@@ -6,9 +6,7 @@ import AccountPanel from './AccountPanel'
 import DashStatsPanel from './DashStatsPanel'
 import IncludeTransfersToggle from './IncludeTransfersToggle'
 
-const Dashboard = ({walletStats,activeWalletID,setActiveWalletID,activeAssets,setActiveAssets,status,setStatus,currencyType,setCurrencyType,currentEthPrice, useTransfersInCalc,setUseTransfersInCalc,walletMetaData}) => {
-
-    const [walletInputFieldText,setWalletInputFieldText] = useState('0x5010EBae2C4d0B300A754AEF5A9d0f739198ec65');
+const Dashboard = ({walletInputFieldText,setWalletInputFieldText,walletStats,activeWalletID,setActiveWalletID,activeAssets,setActiveAssets,status,setStatus,currencyType,setCurrencyType,currentEthPrice, useTransfersInCalc,setUseTransfersInCalc,walletMetaData,currentUser}) => {
 
     return (
         <DashboardContainer>
@@ -43,6 +41,8 @@ const Dashboard = ({walletStats,activeWalletID,setActiveWalletID,activeAssets,se
                     currencyType={currencyType}
                     status={status}
                     walletMetaData={walletMetaData}
+                    activeWalletID={activeWalletID}
+                    currentUser={currentUser}
                 />
             </GridItem3>
             <GridItem4>

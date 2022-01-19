@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { useTable } from 'react-table'
+import { useTable, useGlobalFilter } from 'react-table'
 import {COLUMNS} from './columns'
 
 
-export const BasicTable = ({activeAssets,currencyType}) => {
+export const BasicTable = ({activeAssets,currencyType,walletSearchString,setWalletSearchString}) => {
     const columns = useMemo(() => COLUMNS, []);
     const data = useMemo(() => activeAssets, [activeAssets]);
     const [hiddenStateColumns, setStateHiddenColumns] = useState([])
@@ -17,14 +17,19 @@ export const BasicTable = ({activeAssets,currencyType}) => {
     useEffect(()=>{
         setHiddenColumns(hiddenStateColumns)
     },[hiddenStateColumns])
+    useEffect(()=>{
+        setGlobalFilter(walletSearchString)
+    },[walletSearchString])
 
-    const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, setHiddenColumns} = useTable({
+    const {getTableProps, getTableBodyProps, headerGroups, rows, prepareRow, setHiddenColumns,setGlobalFilter, state} = useTable({
         columns,
         data,
         initialState: {
             hiddenColumns: hiddenStateColumns
         },
-    });
+    }, useGlobalFilter);
+
+    const { globalFilter } = state;
 
     return (
         <table {...getTableProps}>

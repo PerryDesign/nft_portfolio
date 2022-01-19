@@ -1,7 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
+import SubscribeToWallet from './SubscribeToWallet';
 
-const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMetaData}) => {
+const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMetaData,activeWalletID,currentUser}) => {
 
     var firstTransactionDate = new Date(walletMetaData.first_transaction);
     var firstTransaction = walletMetaData.first_transaction == '00/00/00' ? '00/00/00' : firstTransactionDate.getDate()+'/'+firstTransactionDate.getDay()+'/'+firstTransactionDate.getFullYear()
@@ -9,7 +10,13 @@ const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMe
         <AccountPanelContainer>
             <ProPicContainer>
                 <ProPic src={walletMetaData.opensea_pro_pic}/>
-                <UserNameStyle><h2>{walletMetaData.opensea_username}</h2></UserNameStyle>
+                <NameSubscribeDiv>
+                    <UserNameStyle><h2>{walletMetaData.opensea_username}</h2></UserNameStyle>
+                    <SubscribeToWallet 
+                        activeWalletID={activeWalletID}
+                        currentUser={currentUser}
+                    />
+                </NameSubscribeDiv>
             </ProPicContainer>
             <InfoContainer>
                 <AccountDataDiv>
@@ -40,7 +47,7 @@ const AccountPanelContainer = styled.div`
 const ProPicContainer = styled.div`
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: end;
     justify-content: baseline;
     margin-bottom: 30px ;
 `
@@ -51,8 +58,15 @@ const ProPic = styled.img`
     justify-content: center;
     width: 80px;
 `
-const UserNameStyle = styled.div`
+const NameSubscribeDiv = styled.div`
+    /* display: flex;
+    flex-direction: column; */
+    padding: 0px 10px;
+    text-align: left;
+    /* align-items: */
     margin: 0px 0px 0px 30px;
+`
+const UserNameStyle = styled.div`
 `
 
 const InfoContainer = styled.div`
@@ -79,5 +93,6 @@ const AccountCell = styled.div`
 const AccountCellData = styled(AccountCell)`
     /* background-color: ${props => props.theme.background.two}; */
 `
+
 
 export default AccountPanel

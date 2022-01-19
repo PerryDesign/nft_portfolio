@@ -1,14 +1,26 @@
-import React from 'react'
+import React, {useState} from 'react'
 import styled from 'styled-components'
 import {BasicTable} from './BasicTable'
+import { GlobalFilter } from './GlobalFilter'
 
 const ResultsTable = ({activeAssets,currencyType}) => {
+
+
+
+    const [walletSearchString, setWalletSearchString] = useState('');
+
     return (
         <ResultsTableContainer>
+            <GlobalFilter 
+                walletSearchString={walletSearchString}
+                setWalletSearchString={setWalletSearchString}
+            />
             <StyledTable>
                 <BasicTable
                     activeAssets={activeAssets}
                     currencyType={currencyType}
+                    walletSearchString={walletSearchString}
+                    setWalletSearchString={setWalletSearchString}
                 />
             </StyledTable>
         </ResultsTableContainer>

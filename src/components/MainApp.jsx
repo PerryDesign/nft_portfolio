@@ -1,15 +1,17 @@
 import React, {useState, useEffect} from 'react'
 import styled from 'styled-components'
 import Dashboard from './dashboard/Dashboard'
-import Header from './Header'
+import Header from './header/Header'
 import ResultsTable from './ResultsTable'
 import {fetchAssets} from './fetchAssets'
 import { getWalletStats } from './getWalletStats'
+import { useMoralis } from "react-moralis"
 
 
-const MainApp = () => {
+const MainApp = ({currentUser,setCurrentUser}) => {
 
     const [status, setStatus] = useState('ready');
+    const [walletInputFieldText,setWalletInputFieldText] = useState('');
     const [activeWalletID, setActiveWalletID] = useState('');
     const [activeAssets, setActiveAssets] = useState([]);
     const [walletStats, setWalletStats] = useState('');
@@ -47,11 +49,17 @@ const MainApp = () => {
     },[useTransfersInCalc])
 
     useEffect(()=>{
-        console.log(activeAssets)
+        // console.log(activeAssets)
     },[activeAssets])
     useEffect(()=>{
-        console.log(walletStats)
+        // console.log(walletStats)
     },[walletStats])
+    const { isAuthUndefined, isAuthenticated, account, user } = useMoralis();
+    useEffect(()=>{
+        if(isAuthenticated){
+            setWalletInputFieldText(currentUser);
+        }
+    },[currentUser]);
 
 
     var WALLET_ASSETS_TEMP = [{
@@ -64,16 +72,20 @@ const MainApp = () => {
         asset_thumbnail: 'https://storage.googleapis.com/opensea-static/opensea-profile/31.png',
         asset_permalink: '',
         position: 'open',
-        purchase_price: '0',
-        sell_price: '0',
+        purchase_price: 0,
+        sell_price: 0,
         purchase_time: '',
         sell_time: '',
         purchase_transaction_hash: '',
         sell_transaction_hash: '',
-        purchase_etherPrice: '',
-        sell_etherPrice: '',
-        transactionQuantity: '',
-        transactionType: '',
+        purchase_etherPrice: 0,
+        sell_etherPrice: 0,
+        transactionQuantity: 1,
+        transactionType: 'ERC721',
+        roiPercent:1,
+        roiEth:0,
+        roiDollar:0,
+        roiHist:0,
     }]
 
      var WALLET_METADATA_TEMP = {
@@ -107,14 +119,21 @@ const MainApp = () => {
     return (
         <MainAppContainer>
             <Header
+                currentUser={currentUser}
+                setCurrentUser={setCurrentUser}
                 currentEthPrice={currentEthPrice}
                 setCurrentEthPrice={setCurrentEthPrice}
+                walletInputFieldText={walletInputFieldText}
+                setWalletInputFieldText={setWalletInputFieldText}
             />
             <WalletExplorerContainer>
                 <Dashboard
+                    currentUser={currentUser}
                     walletStats={walletStats}
                     activeWalletID={activeWalletID}
                     setActiveWalletID={setActiveWalletID}
+                    walletInputFieldText={walletInputFieldText}
+                    setWalletInputFieldText={setWalletInputFieldText}
                     activeAssets={activeAssets}
                     setActiveAssets={setActiveAssets}
                     status={status}

@@ -58,13 +58,10 @@ const IconButtonDiv = styled.button`
         background-color: ${props => props.theme.colors.blue};
     }
 `
-
 const StyledSearch = styled(Search)`
     height: 15px;
     width: 15px;
 `
-
-
 const AddressInput = styled.input`
     display: flex;
     flex-direction: row;

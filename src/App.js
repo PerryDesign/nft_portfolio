@@ -1,6 +1,7 @@
-import React from 'react';
+import React, {useState,useEffect} from 'react';
 import styled, {them, ThemeProvider} from 'styled-components';
 import { lighten, darken } from 'polished'
+import { useMoralis } from "react-moralis";
 
 
 import MainApp from './components/MainApp';
@@ -39,19 +40,37 @@ var getThemeInformation = (function(){
           green: '#23EB87',
           red: '#F06565',
           blue: '#00DEFF',
+          blueDark: darken(.02,'#00DEFF'),
           purple: '#8A2BE2',
           text: '#939598'
       }
   }
 })();
 
-
 function App() {
+
+  const [currentUser, setCurrentUser] = useState('');
+  const { isAuthUndefined, isAuthenticated, user, logout } = useMoralis();
+  useEffect(()=>{
+    console.log('isAuthUndefined = '+isAuthUndefined);
+    if(!isAuthUndefined){
+      if(isAuthenticated){
+        var ethAddress = user.get("accounts")
+        setCurrentUser(ethAddress[0]);
+      }else{
+        setCurrentUser(false)
+      }
+    }
+  },[isAuthenticated])
+
   return (
     <div className="App">
       <ThemeProvider theme={getThemeInformation}>
         <FontSupply>
-          <MainApp/>
+          <MainApp
+            currentUser={currentUser}
+            setCurrentUser={setCurrentUser}
+          />
         </FontSupply>
       </ThemeProvider>
     </div>
