@@ -1,10 +1,79 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState,useEffect, useRef} from 'react';
 import styled, {them, ThemeProvider} from 'styled-components';
 import { lighten, darken } from 'polished'
 import { useMoralis } from "react-moralis";
-
-
+import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import MainApp from './components/MainApp';
+import Header from './components/header/Header'
+import TrackedWalletsPage from './components/trackedWallets/TrackedWalletsPage';
+
+function App() {
+
+  const [currentUser, setCurrentUser] = useState('');
+  const [currentEthPrice, setCurrentEthPrice] = useState('');
+  const [trackedWallets, setTrackedWallets] = useState([]);
+  const previousTrackedWallets = useRef([]);
+  const [currentPage, setCurrentPage] = useState('port_explorer');
+
+
+  const { isAuthUndefined, isAuthenticated, user, logout } = useMoralis();
+  useEffect(()=>{
+    console.log('isAuthUndefined = '+isAuthUndefined);
+    if(!isAuthUndefined){
+      if(isAuthenticated){
+        var ethAddress = user.get("accounts")
+        setCurrentUser(ethAddress[0]);
+      }else{
+        setCurrentUser(false)
+      }
+    }
+  },[isAuthenticated])
+  useEffect(()=>{
+    console.log(trackedWallets.slice())
+    console.log(previousTrackedWallets.current.slice())
+    previousTrackedWallets.current = trackedWallets;
+  },[trackedWallets])
+
+  return (
+    <ThemeProvider theme={getThemeInformation}>
+        <FontSupply>
+            <Header
+                currentUser={currentUser}
+                setCurrentUser={setCurrentUser}
+                currentEthPrice={currentEthPrice}
+                setCurrentEthPrice={setCurrentEthPrice}
+                setCurrentPage={setCurrentPage}
+                currentPage={currentPage}
+            />
+            <PageContainer visible={currentPage ==='port_explorer'}>
+              <MainApp
+                currentUser={currentUser}
+                setCurrentUser={setCurrentUser}
+                currentEthPrice={currentEthPrice}
+                trackedWallets={trackedWallets}
+                setTrackedWallets={setTrackedWallets}
+                previousTrackedWallets={previousTrackedWallets}
+              />
+            </PageContainer>
+            <PageContainer visible={currentPage ==='tracked_wallets'}>
+              <TrackedWalletsPage
+                currentUser={currentUser}
+                currentEthPrice={currentEthPrice}
+                trackedWallets={trackedWallets}
+                setTrackedWallets={setTrackedWallets}
+                previousTrackedWallets={previousTrackedWallets}
+              />
+            </PageContainer>
+        </FontSupply>
+      </ThemeProvider>
+  );
+}
+
+const PageContainer = styled.div`
+  display: ${props => props.visible ? 'flex' : 'none'};
+  flex-direction: column;
+  align-items: center;
+`
 
 var getThemeInformation = (function(){
   var theme = {
@@ -40,43 +109,12 @@ var getThemeInformation = (function(){
           green: '#23EB87',
           red: '#F06565',
           blue: '#00DEFF',
-          blueDark: darken(.02,'#00DEFF'),
+          blueDark: darken(.1,'#00DEFF'),
           purple: '#8A2BE2',
           text: '#939598'
       }
   }
 })();
-
-function App() {
-
-  const [currentUser, setCurrentUser] = useState('');
-  const { isAuthUndefined, isAuthenticated, user, logout } = useMoralis();
-  useEffect(()=>{
-    console.log('isAuthUndefined = '+isAuthUndefined);
-    if(!isAuthUndefined){
-      if(isAuthenticated){
-        var ethAddress = user.get("accounts")
-        setCurrentUser(ethAddress[0]);
-      }else{
-        setCurrentUser(false)
-      }
-    }
-  },[isAuthenticated])
-
-  return (
-    <div className="App">
-      <ThemeProvider theme={getThemeInformation}>
-        <FontSupply>
-          <MainApp
-            currentUser={currentUser}
-            setCurrentUser={setCurrentUser}
-          />
-        </FontSupply>
-      </ThemeProvider>
-    </div>
-  );
-}
-
 const FontSupply = styled.div`
   @import url("https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap");
   @import url("https://fonts.googleapis.com/css?family=Inter:200,400,700&display=swap");
@@ -84,6 +122,13 @@ const FontSupply = styled.div`
   text-align: center;
   font-weight: 400;
   font-family: "Montserrat", sans-serif;
+
+  height: 100%;
+  position: absolute;
+  left: 0;
+  width: 100%;
+  background-color: ${props => props.theme.background.back};
+
   & h1 {
     font-weight: 800;
     font-size: 30px;

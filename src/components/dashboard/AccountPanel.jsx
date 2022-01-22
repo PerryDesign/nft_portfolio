@@ -1,8 +1,25 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import styled from 'styled-components'
 import SubscribeToWallet from './SubscribeToWallet';
 
-const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMetaData,activeWalletID,currentUser}) => {
+const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMetaData,activeWalletID,currentUser,trackedWallets,setTrackedWallets,previousTrackedWallets}) => {
+
+
+    const [subscribed,setSubscribed] = useState(true);
+
+    useEffect(()=>{
+        if(activeWalletID !== ''){
+            var check = trackedWallets.filter(wallet => {
+                return wallet === activeWalletID;
+            }); 
+            check = check.length > 0 ? true : false;
+            console.log('subscribed - ' + check+'   '+trackedWallets);
+            
+            setSubscribed(check);
+        };
+    },[activeWalletID,trackedWallets])
+
+
 
     var firstTransactionDate = new Date(walletMetaData.first_transaction);
     var firstTransaction = walletMetaData.first_transaction == '00/00/00' ? '00/00/00' : firstTransactionDate.getDate()+'/'+firstTransactionDate.getDay()+'/'+firstTransactionDate.getFullYear()
@@ -14,7 +31,10 @@ const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMe
                     <UserNameStyle><h2>{walletMetaData.opensea_username}</h2></UserNameStyle>
                     <SubscribeToWallet 
                         activeWalletID={activeWalletID}
-                        currentUser={currentUser}
+                        trackedWallets={trackedWallets}
+                        setTrackedWallets={setTrackedWallets}
+                        previousTrackedWallets={previousTrackedWallets}
+                        subscribed={subscribed}
                     />
                 </NameSubscribeDiv>
             </ProPicContainer>

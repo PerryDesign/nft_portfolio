@@ -35,7 +35,6 @@ function fetchAssets(wallet_id,currentEthPrice){
       erc20Transactions = res[1];
       allTransactions = res[2];
       nftTransactions = res[3];
-      console.log(nftTransactions);
       console.log('sortWalletAssets');
       walletAssets = sortWalletAssets(walletData);
       
@@ -115,7 +114,6 @@ function fetchAssets(wallet_id,currentEthPrice){
       while(pullData){
         const nftOptions = { chain: "Eth", address: walletID, offset : currentOffset};
         var nftTransactionsRes = await Moralis.Web3API.account.getNFTTransfers(nftOptions);
-        console.log(nftTransactionsRes.result)
         if(nftTransactionsRes.result.length < 1){
           pullData = false;
         }else{

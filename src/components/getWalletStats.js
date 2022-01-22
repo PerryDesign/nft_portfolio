@@ -46,7 +46,6 @@
       return valid
     }
 
-    
     var totalUnrealizedPercent = purchaseOpen !== 0 ? floor/purchaseOpen : 0;;
     var totalUnrealizedEth = floor-purchaseOpen;
     var totalUnrealizedDollar = (floor-purchaseOpenHist);

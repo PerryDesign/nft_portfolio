@@ -55,7 +55,7 @@ const ConnectButton = styled.div`
     white-space: nowrap;
     flex-direction: column;
     justify-content: center;
-    height: 30px;
+    height: 20px;
     width: 100px;
     min-width: 0px;
     color: ${props => props.user ? props.theme.colors.purple : props.theme.text.white};
@@ -71,7 +71,7 @@ const IconButtonDiv = styled.button`
     margin: 0px 5px;
     min-width: 29px;
     width: 33px;
-    height: 40px;
+    height: 30px;
     color: white;
     background-color: ${props => props.theme.colors.purple};
     border-radius: 4px;
