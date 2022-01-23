@@ -95,6 +95,7 @@ function fetchAssets(wallet_id,currentEthPrice){
       var walletData = []
       var currentOffset = 0;
       var pullData = true;
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
       while(pullData){
         const options = {method: 'GET'};
         var response = await fetch(`https://api.opensea.io/api/v1/assets?owner=${walletID}&order_direction=desc&offset=${currentOffset}&limit=50`, options);
@@ -104,6 +105,7 @@ function fetchAssets(wallet_id,currentEthPrice){
         }else{
           walletData = walletData.concat(responseParsed.assets);
           currentOffset += 50;
+          await sleep(600);
         }
       }
       console.log('Pulling nft transactions')
@@ -119,6 +121,7 @@ function fetchAssets(wallet_id,currentEthPrice){
         }else{
           nftTransactions = nftTransactions.concat(nftTransactionsRes.result);
           currentOffset += 500;
+          await sleep(600);
         }
       }
       
@@ -135,6 +138,7 @@ function fetchAssets(wallet_id,currentEthPrice){
         }else{
           erc20Transactions = erc20Transactions.concat(erc20TransactionsRes.result);
           currentOffset += 500;
+          await sleep(600);
         }
       }
       
@@ -152,6 +156,7 @@ function fetchAssets(wallet_id,currentEthPrice){
         }else{
           all_transactions = all_transactions.concat(transactions.result);
           currentOffset += 500;
+          await sleep(600);
         }
       }
 

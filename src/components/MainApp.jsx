@@ -33,6 +33,7 @@ const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setT
                 setActiveAssets(assets[0]);
                 setWalletMetaData(assets[1]);
                 var stats = getWalletStats(assets[0],currentEthPrice,useTransfersInCalc,trackedWallets,activeWalletID);
+                console.log(stats);
                 setWalletStats(stats);
             });
         } 
@@ -152,6 +153,7 @@ const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setT
                 <ResultsTable
                     activeAssets={activeAssets}
                     currencyType={currencyType}
+                    status={status}
                 />
             </WalletExplorerContainer>
         </MainAppContainer>

@@ -132,38 +132,41 @@ Moralis.Cloud.define("watchAddress", async (request) => {
             for(var i = 0;i<matchedAddresses.length;i++){
                 const followerArray = matchedAddresses[i].get("followers");
                 if(followerArray[i] === userId){
-
                     var watchedAddress = matchedAddresses[i].get("address");
-                    const nftData = await getNFTData(token_id,token_address);
+                    const fetchedData = await Moralis.Cloud.httpRequest({
+                        url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=20`,
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+                        }
+                    })
+                    var nftData = fetchedData.data;
+                    logger.info(nftData)
                     var collection_name = nftData.assets[0].name;
                     var external_link = nftData.assets[0].external_link;
                     var email = user.get("email");
-                    var message = `${watchedAddress} ${soldTransaction ? 'sold' : 'bought'} a ${collection_name}. Find it on OpenSea - ${external_link}`
-
+                    logger.info(collection_name)
+                    var message = `
+                        <div>
+                            <h3>New Transaction</h3>
+                        </div>
+                        <div>
+                            ${watchedAddress} ${purchaseType} a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
+                        </div>
+                
+                    `
                     Moralis.Cloud.sendEmail({
                         to: email,
-                        templateID: "d-5e080156c8c1424c88f526899deed2f0",
-                        dynamic_template_data: {
-                            watchedAddress: watchedAddress,
-                            purchaseType: purchaseType,
-                            collection_name: collection_name,
-                            external_link: external_link,
-                        }
-                    })
-                    logger.info(to_address+"--------------"+from_address);
+                        subject: 'New NFT transaction',
+                        html: message,
+                    },{useMasterKey:true});
+                    logger.info('sent email');
                 }
             }
         }
 
         
-        
-        
-        
-        // todo: insert handling including increase/decrease here
-        // next: trigger allocated alert method
-        // e.g. sendTelegramAlert(request.object, token_data);
     });
-    
     return true;
     
 
@@ -242,16 +245,16 @@ Moralis.Cloud.define("testEmail", async (request) => {
     var collection_name = nftData.assets[0].name;
     var external_link = nftData.assets[0].external_link;
     var email = user.get("email");
+    var purchaseType = true ? 'sold' : 'bought';
     logger.info(collection_name)
     var message = `
-
         <div>
             <h3>New Transaction</h3>
         </div>
         <div>
-            ${watchedAddress} ${soldTransaction ? 'sold' : 'bought'} a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
+            ${watchedAddress} ${purchaseType} a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
         </div>
-    
+
     `
     Moralis.Cloud.sendEmail({
         to: email,

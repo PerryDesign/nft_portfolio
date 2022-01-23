@@ -2,12 +2,16 @@ import React, {useState} from 'react'
 import styled from 'styled-components'
 import {BasicTable} from './BasicTable'
 import { GlobalFilter } from './GlobalFilter'
+import LoadingAnimation from './LoadingAnimation'
 
-const ResultsTable = ({activeAssets,currencyType}) => {
+
+const ResultsTable = ({activeAssets,currencyType, status}) => {
 
 
 
     const [walletSearchString, setWalletSearchString] = useState('');
+
+
 
     return (
         <ResultsTableContainer>
@@ -23,9 +27,21 @@ const ResultsTable = ({activeAssets,currencyType}) => {
                     setWalletSearchString={setWalletSearchString}
                 />
             </StyledTable>
+            <StyledLoadingBlob visible={status === 'start_fetch'}>
+              <LoadingAnimation/>
+            </StyledLoadingBlob>
         </ResultsTableContainer>
     )
 }
+
+const StyledLoadingBlob = styled.div`
+  display: ${props => props.visible ? 'flex' : 'none'};
+  flex-direction: column;
+  align-content: center;
+  width: 150px;
+
+`
+
 
 const StyledTable = styled.div`
 width:100%;
