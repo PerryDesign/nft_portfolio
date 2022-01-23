@@ -116,9 +116,8 @@ var getThemeInformation = (function(){
   }
 })();
 const FontSupply = styled.div`
-  @import url("https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap");
-  @import url("https://fonts.googleapis.com/css?family=Inter:200,400,700&display=swap");
-  @import url("https://fonts.googleapis.com/css?family=OpenSans:300,400,700&display=swap");
+  /* @import url("https://fonts.googleapis.com/css?family=Montserrat:400,700&display=swap");
+  @import url("https://fonts.googleapis.com/css?family=OpenSans:300,400,700&display=swap"); */
   text-align: center;
   font-weight: 400;
   font-family: "Montserrat", sans-serif;
@@ -163,7 +162,7 @@ const FontSupply = styled.div`
     font-size: 16px;
     color: inherit;
     margin: 0px;
-    font-family: "Inter", sans-serif;
+    /* font-family: "Inter", sans-serif; */
   }
   & a {
     color: inherit;

@@ -12,7 +12,7 @@ const HeaderAccount = ({currentUser,setCurrentUser}) => {
         } else {
             // show the signup or login page
             console.log("Click")
-            await authenticate();
+            await authenticate({onError: (err)=>{ console.log(err)}});
             console.log(isAuthenticated)
         }
     };
