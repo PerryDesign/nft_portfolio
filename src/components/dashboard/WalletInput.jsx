@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components';
 import {Search} from '@styled-icons/bootstrap'
 
-const WalletInput = ({walletInputFieldText,setWalletInputFieldText,activeWalletID,setActiveWalletID,status,setStatus}) => {
+const WalletInput = ({walletInputFieldText,setWalletInputFieldText,activeWalletID,setActiveWalletID,status,setStatus,currentUser}) => {
 
     // Functions
     const labelInputHandler = (e) => {
@@ -11,19 +11,17 @@ const WalletInput = ({walletInputFieldText,setWalletInputFieldText,activeWalletI
         setWalletInputFieldText(inputValue);
     }
     const fetchButtonHandler = () => {
-        console.log('click')
-        if(status == 'ready' || status === 'fetched'){
+        if(!currentUser.address){
+            alert("Please connect your wallet before exploring :)")
+        }else if(status == 'ready' || status === 'fetched'){
             setActiveWalletID(walletInputFieldText);
             setStatus('start_fetch');
         }
-        // function checkAddressExists(){
-        //     // Check if address is legit, return boolean
-        // }
     }
 
     return (
         <WalletInputContainer>
-                <AddressInput type="text" value={walletInputFieldText} onChange={labelInputHandler} id={'WalletInputField'}></AddressInput>
+                <AddressInput type="text" placeholder="Enter wallet address" value={walletInputFieldText} onChange={labelInputHandler} id={'WalletInputField'}></AddressInput>
                 {/* <FetchButton  onClick={fetchButtonHandler}/> */}
                 <IconButtonDiv id={'hist'} onClick={fetchButtonHandler}><StyledSearch/></IconButtonDiv>
         </WalletInputContainer>
@@ -48,14 +46,14 @@ const IconButtonDiv = styled.button`
     width: 33px;
     height: 30px;
     color: white;
-    background-color: ${props => props.theme.ui.three};
+    background-color: ${props => props.theme.colors.purple};
     border-radius: 4px;
     border-style: none;
     :focus {
         outline:0;
     }
     :hover {
-        background-color: ${props => props.theme.colors.blue};
+        background-color: ${props => props.theme.colors.purpleDark};
     }
 `
 const StyledSearch = styled(Search)`

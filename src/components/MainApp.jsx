@@ -11,6 +11,7 @@ import Moralis from 'moralis'
 const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setTrackedWallets,previousTrackedWallets}) => {
 
     const [status, setStatus] = useState('ready');
+    const [fetchStatus, setFetchStatus] = useState('ready');
     const [walletInputFieldText,setWalletInputFieldText] = useState('');
     const [activeAssets, setActiveAssets] = useState([]);
     const [walletStats, setWalletStats] = useState('');
@@ -28,7 +29,7 @@ const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setT
             setActiveAssets(WALLET_ASSETS_TEMP);
             setWalletMetaData(WALLET_METADATA_TEMP);
             setWalletStats(WALLET_STATS_TEMP);
-            fetchAssets(activeWalletID,currentEthPrice).then((assets)=>{
+            fetchAssets(activeWalletID,currentEthPrice,setFetchStatus).then((assets)=>{
                 setStatus('fetched')
                 setActiveAssets(assets[0]);
                 setWalletMetaData(assets[1]);
@@ -52,7 +53,7 @@ const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setT
     useEffect(async ()=>{
         // Set text input field
         if(isAuthenticated){
-            setWalletInputFieldText(currentUser);
+            setWalletInputFieldText(currentUser.address);
 
             // Fetch Tracked Wallets
             const UserObj = Moralis.Object.extend("User");
@@ -154,6 +155,7 @@ const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setT
                     activeAssets={activeAssets}
                     currencyType={currencyType}
                     status={status}
+                    fetchStatus={fetchStatus}
                 />
             </WalletExplorerContainer>
         </MainAppContainer>

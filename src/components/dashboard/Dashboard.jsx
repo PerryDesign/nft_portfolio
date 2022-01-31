@@ -20,6 +20,7 @@ const Dashboard = ({walletInputFieldText,setWalletInputFieldText,walletStats,act
                     setActiveAssets={setActiveAssets}
                     status={status}
                     setStatus={setStatus}
+                    currentUser={currentUser}
                     />
             </GridItem1>
             <GridItem2>
@@ -30,10 +31,10 @@ const Dashboard = ({walletInputFieldText,setWalletInputFieldText,walletStats,act
                     status={status}
                     setStatus={setStatus}
                 />
-                <IncludeTransfersToggle
+                {/* <IncludeTransfersToggle
                     useTransfersInCalc={useTransfersInCalc}
                     setUseTransfersInCalc={setUseTransfersInCalc}
-                />
+                /> */}
             </GridItem2>
             <GridItem3>
                 <AccountPanel

@@ -52,7 +52,7 @@ export const COLUMNS = [
         Header: 'Sold',
         accessor: 'sell_price',
         Cell: ({ row }) => {
-            var soldDiv = (<CellContainer/>)
+            var soldDiv = (<CellContainerNum/>)
             if(row.original.position == 'closed'){
                 soldDiv = 
                     (<CellContainerNum type={'sold'} value={row.original.position}>
@@ -125,8 +125,9 @@ const CellContainer = styled.div`
     flex-direction: row;
     justify-content: left;
     align-items: center;
-    max-width: 200px;
-    min-width: 80px;
+    /* max-width: 200px; */
+    /* min-width: 80px; */
+    width:200px;
     padding: 0px 10px;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -134,6 +135,7 @@ const CellContainer = styled.div`
 `
 const CellContainerNum = styled(CellContainer)`
     font-weight: 400;
+    width:60px;
     font-family: "OpenSans", sans-serif;
     justify-content: right;
 `

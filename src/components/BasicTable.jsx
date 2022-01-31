@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react'
-import { useTable, useGlobalFilter } from 'react-table'
+import { useTable, useGlobalFilter, useSortBy } from 'react-table'
 import {COLUMNS} from './columns'
+import {CaretUpSquareFill} from '@styled-icons/bootstrap'
+import styled from 'styled-components'
 
 
 export const BasicTable = ({activeAssets,currencyType,walletSearchString,setWalletSearchString}) => {
@@ -27,7 +29,7 @@ export const BasicTable = ({activeAssets,currencyType,walletSearchString,setWall
         initialState: {
             hiddenColumns: hiddenStateColumns
         },
-    }, useGlobalFilter);
+    }, useGlobalFilter, useSortBy);
 
     const { globalFilter } = state;
 
@@ -37,7 +39,12 @@ export const BasicTable = ({activeAssets,currencyType,walletSearchString,setWall
                 {headerGroups.map(headerGroup => (
                     <tr {...headerGroup.getHeaderGroupProps()}>
                     {headerGroup.headers.map(column => (
-                        <th {...column.getHeaderProps()}>{column.render('Header')}</th>
+                        <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                            {column.render('Header')}
+                            <span>
+                                {column.isSorted ? (!column.isSortedDesc ? (<StytledSortingIcon/>) : (<StytledSortingIconDown/>) ) : ''}
+                            </span>
+                        </th>
                     ))}
                     </tr>
                 ))}
@@ -58,5 +65,14 @@ export const BasicTable = ({activeAssets,currencyType,walletSearchString,setWall
         </table>
     )
 }
+
+const StytledSortingIcon = styled(CaretUpSquareFill)`
+    width: 15px;
+    margin-left: 10px;
+    color: ${props => props.theme.ui.three};
+`
+const StytledSortingIconDown = styled(StytledSortingIcon)`
+    transform: rotate(180deg);
+`
 
 

@@ -2,7 +2,7 @@ import Moralis from "moralis";
 
 
 
-function fetchAssets(wallet_id,currentEthPrice){
+function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
   return new Promise((resolve,reject)=>{
     
     var ALL_ASSETS = [];
@@ -36,6 +36,7 @@ function fetchAssets(wallet_id,currentEthPrice){
       allTransactions = res[2];
       nftTransactions = res[3];
       console.log('sortWalletAssets');
+      setFetchStatus('Sorting pulled Data')
       walletAssets = sortWalletAssets(walletData);
       
       console.log('updateWallets');
@@ -43,10 +44,12 @@ function fetchAssets(wallet_id,currentEthPrice){
         
         console.log('updateTransactionQuantity');
         updateTransactionQuantity();
-
+        
         console.log('updateEtherPrices');
+        setFetchStatus('Getting historic Eth prices');
         updateEtherPrices().then(()=>{
-
+          
+          setFetchStatus('Updating floor prices');
           updateFloorPrices().then(()=>{
             addAdditionalProps();
             getWalletStats();
@@ -96,6 +99,7 @@ function fetchAssets(wallet_id,currentEthPrice){
       var currentOffset = 0;
       var pullData = true;
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      setFetchStatus('Pulling Active NFTs');
       while(pullData){
         const options = {method: 'GET'};
         var response = await fetch(`https://api.opensea.io/api/v1/assets?owner=${walletID}&order_direction=desc&offset=${currentOffset}&limit=50`, options);
@@ -108,6 +112,7 @@ function fetchAssets(wallet_id,currentEthPrice){
           await sleep(600);
         }
       }
+      setFetchStatus('Pulling NFT transactions');
       console.log('Pulling nft transactions')
       // Pull all NFT transactions - used for seeing previous purchases
       var currentOffset = 0;
@@ -125,6 +130,7 @@ function fetchAssets(wallet_id,currentEthPrice){
         }
       }
       
+      setFetchStatus('Pulling ERC20 transactions');
       console.log('Pulling erc20 transactions')
       // Pull all erc20 transactions - used for seeing if purchase was payed for in something other than eth
       var currentOffset = 0;
@@ -143,6 +149,7 @@ function fetchAssets(wallet_id,currentEthPrice){
       }
       
       
+      setFetchStatus('Pulling all transactions');
       console.log('Pulling all transactions')
       // Pull all transactions - used for connecting burned pieces and for transaction that took 2 to mint
       var currentOffset = 0;
@@ -211,19 +218,27 @@ function fetchAssets(wallet_id,currentEthPrice){
     }
   
     async function updateWallets(){
+      var ImportedNFTNum = 0;
 
       for(var i = 0; i<nftTransactions.length;i++){
         var type = nftTransactions[i].contract_type;
+        var beginTime = new Date();
         if(type == 'ERC721' || type == 'ERC1155'){
           var soldAsset = nftTransactions[i].from_address == walletID.toLowerCase();
           var transactionValue = await getTransactionValue(nftTransactions[i],i,false,soldAsset);
           if(!soldAsset){
             // Insert transaction data retrieved from Moralis
             // console.log(transactionValue[1])
-            insertAssetData(nftTransactions[i],i,transactionValue);
+            insertAssetData(nftTransactions[i],i,transactionValue, beginTime);
+            ImportedNFTNum ++;
+            setFetchStatus('Importing NFT #'+ImportedNFTNum);
+            console.log(ImportedNFTNum);
           }else{
             // Import any transactions that were sold
-            await importSoldAssets(nftTransactions[i],i,transactionValue);
+            await importSoldAssets(nftTransactions[i],i,transactionValue, beginTime);
+            ImportedNFTNum ++;
+            setFetchStatus('Importing NFT #'+ImportedNFTNum);
+            console.log(ImportedNFTNum);
           }
         }
       }
@@ -347,7 +362,7 @@ function fetchAssets(wallet_id,currentEthPrice){
       // console.log(transactionQuantity)
     }
   
-    async function importSoldAssets(transaction,i,transactionValue){
+    async function importSoldAssets(transaction,i,transactionValue,beginTime){
       var id = transaction.token_address + '/' + transaction.token_id;
   
       // Find purchase txn

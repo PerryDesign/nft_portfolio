@@ -5,7 +5,7 @@ import styled from 'styled-components'
 export const GlobalFilter = ({walletSearchString, setWalletSearchString}) => {
     return (
         <WalletInputContainer>
-            <AddressInput placeholder='Search Wallets' value={walletSearchString || ''} onChange={e => setWalletSearchString(e.target.value)} />
+            <AddressInput placeholder="Search wallet's NFTs" value={walletSearchString || ''} onChange={e => setWalletSearchString(e.target.value)} />
             <StyledSearch/>
         </WalletInputContainer>
     )

@@ -60,7 +60,7 @@
     var soldHoldingsEth = sold;
     var soldHoldingsDollar = sold;
     var soldHoldingsHist = saleHist;
-    var netRoiPercent = (floor+sold)/(purchaseOpen*purchaseClosed);
+    var netRoiPercent = (floor+sold)/(purchaseOpen+purchaseClosed);
     var netRoiEth = (floor+sold)-(purchaseOpen+purchaseClosed);
     var netRoiDollar = (floor+sold)-(purchaseOpen+purchaseClosed);
     var netRoiHist = ((activeHoldingsHist*ETH_PRICE)+saleHist)-(purchaseClosedHist+purchaseOpenHist);

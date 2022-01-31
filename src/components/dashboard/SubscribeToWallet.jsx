@@ -69,12 +69,12 @@ const SubscribeToWalletContainer = styled.div`
     align-items: center;
     justify-content: center;
     color: ${props => props.theme.text.white};
-    background-color: ${props => props.theme.colors.blue};
+    background-color: ${props => props.theme.colors.purple};
     border-radius: 4px;
     margin-top: 10px;
     padding: 5px 10px;
     :hover {
-        background-color: ${props => props.theme.colors.blueDark};
+        background-color: ${props => props.theme.colors.purpleDark};
     }
 `
 const UnsubscribeToWalletContainer = styled.div`
@@ -82,13 +82,13 @@ const UnsubscribeToWalletContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: ${props => props.theme.colors.blue};
-    border: ${props => '2px solid '+props.theme.colors.blue};
+    color: ${props => props.theme.colors.purple};
+    border: ${props => '2px solid '+props.theme.colors.purple};
     border-radius: 4px;
     margin-top: 10px;
     padding: 3px 10px;
     :hover {
-        background-color: ${props => props.theme.colors.blueDark};
+        background-color: ${props => props.theme.colors.purpleDark};
         color: ${props => props.theme.text.white};
     }
 `

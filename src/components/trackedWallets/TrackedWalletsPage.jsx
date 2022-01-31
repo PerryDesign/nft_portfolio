@@ -17,11 +17,18 @@ const TrackedWalletsPage = ({currentUser,currentEthPrice,trackedWallets,setTrack
         console.log('trying to send email');
         const email = await Moralis.Cloud.run("testEmail");
     }
+    const handleTestSend = async (e) => {
+        var address = e.target.id;
+        console.log('trying to send email');
+        const email = await Moralis.Cloud.run("notificationScheduler");
+    }
 
 
     return (
         <TrackedWalletsPageContainer>
-            <TrackerSettings/>
+            <TrackerSettings
+                currentUser={currentUser}
+            />
             <TrackedWalletsContainer>
                 {trackedWallets.map(wallet => {
                     return(
@@ -29,7 +36,8 @@ const TrackedWalletsPage = ({currentUser,currentEthPrice,trackedWallets,setTrack
                     )
                 })}
             </TrackedWalletsContainer>
-            <button onClick={handleTestEmail}/>
+            {/* <button onClick={handleTestEmail}/>
+            <button onClick={handleTestSend}/> */}
         </TrackedWalletsPageContainer>
     );
 };
@@ -55,20 +63,20 @@ const TrackedWalletDiv = styled.div`
     justify-content: space-between;
     background-color: ${props => props.theme.background.four};
     padding: 10px 30px;
-    width: 100%;
+    width: 600px;
 `
 const UnsubscribeToWalletContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: ${props => props.theme.colors.blue};
-    border: ${props => '2px solid '+props.theme.colors.blue};
+    color: ${props => props.theme.colors.purple};
+    border: ${props => '2px solid '+props.theme.colors.purple};
     border-radius: 4px;
     padding: 3px 10px;
     margin-left: 30px;
     :hover {
-        background-color: ${props => props.theme.colors.blue};
+        background-color: ${props => props.theme.colors.purpleDark};
         color: ${props => props.theme.text.white};
     }
 `

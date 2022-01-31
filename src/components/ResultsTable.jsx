@@ -5,7 +5,7 @@ import { GlobalFilter } from './GlobalFilter'
 import LoadingAnimation from './LoadingAnimation'
 
 
-const ResultsTable = ({activeAssets,currencyType, status}) => {
+const ResultsTable = ({activeAssets,currencyType, status,fetchStatus}) => {
 
 
 
@@ -27,20 +27,47 @@ const ResultsTable = ({activeAssets,currencyType, status}) => {
                     setWalletSearchString={setWalletSearchString}
                 />
             </StyledTable>
-            <StyledLoadingBlob visible={status === 'start_fetch'}>
-              <LoadingAnimation/>
-            </StyledLoadingBlob>
+            <FetchingStatusContainer visible={status === 'start_fetch'}>
+              <StyledLoadingBlob >
+                <LoadingAnimation/>
+              </StyledLoadingBlob>
+              <h5><StyledStatus>{fetchStatus}</StyledStatus></h5>
+            </FetchingStatusContainer>
         </ResultsTableContainer>
     )
 }
 
-const StyledLoadingBlob = styled.div`
+const ResultsTableContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: ${props => props.theme.background.four};
+    width: 100%;
+`
+const FetchingStatusContainer = styled.div`
   display: ${props => props.visible ? 'flex' : 'none'};
   flex-direction: column;
+  justify-content: center;
+  justify-items: center;
   align-content: center;
-  width: 150px;
-
+  align-content: center;
+  margin: 10px 30px;
 `
+const StyledLoadingBlob = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 150px;
+  padding: 5px 20px;
+`
+const StyledStatus = styled.div`
+  background-color: ${props => props.theme.colors.purple};
+  padding: 5px 20px;
+  color: ${props => props.theme.text.white};
+  border-radius: 4px;
+  width: 150px;
+`
+
 
 
 const StyledTable = styled.div`
@@ -78,13 +105,6 @@ table tr:nth-child(even){background-color: ${props => props.theme.background.thr
  }
 `
 
-const ResultsTableContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: ${props => props.theme.background.four};
-    width: 100%;
-`
+
 
 export default ResultsTable

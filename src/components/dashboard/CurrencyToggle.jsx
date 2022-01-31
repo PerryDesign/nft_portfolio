@@ -1,11 +1,13 @@
 import React from 'react'
-import styled from 'styled-components'
+import styled, { useTheme } from 'styled-components'
+import ReactTooltip from 'react-tooltip';
 import {Percentage} from '@styled-icons/fa-solid'
 import {Ethereum} from '@styled-icons/fa-brands'
 import {Dollar} from '@styled-icons/foundation'
 
 
 const CurrencyToggle = ({activeAssets,currencyType,setCurrencyType,status,setStatus}) => {
+    const theme = useTheme();
 
     const HandleCurrencyPercentButton = (e) => {
         if(currencyType !== 'percent') setCurrencyType('percent')
@@ -25,10 +27,22 @@ const CurrencyToggle = ({activeAssets,currencyType,setCurrencyType,status,setSta
         <CurrencyToggleContainer>
             <h3>Currency type</h3>
             <IconHolder>
-                <IconButtonDiv id={'percent'} onClick={HandleCurrencyPercentButton}><StyledPercentage/></IconButtonDiv>
-                <IconButtonDiv id={'eth'} onClick={HandleCurrencyEthButton}><StyledEthereum/></IconButtonDiv>
-                <IconButtonDiv id={'dollar'} onClick={HandleCurrencyDollarButton}><StyledDollar/></IconButtonDiv>
-                <IconButtonDiv id={'hist'} onClick={HandleCurrencyHistButton}><StyledDollar/></IconButtonDiv>
+            <h5><IconButtonDiv data-tip="ROI calculated as a percentage" id={'percent'} onClick={HandleCurrencyPercentButton}>
+                    <StyledPercentage/>
+                    <ReactTooltip html={true} effect={'solid'} backgroundColor={theme.ui.one} textColor={theme.text.white}/>
+                </IconButtonDiv ></h5>
+                <h5><IconButtonDiv data-tip="ROI in ether" id={'eth'} onClick={HandleCurrencyEthButton}>
+                    <StyledEthereum/>
+                    <ReactTooltip html={true} effect={'solid'} backgroundColor={theme.ui.one} textColor={theme.text.white}/>
+                </IconButtonDiv></h5>
+                <h5><IconButtonDiv data-tip="ROI in current eth prices" id={'dollar'} onClick={HandleCurrencyDollarButton}>
+                    <StyledDollar/>
+                    <ReactTooltip html={true} effect={'solid'} backgroundColor={theme.ui.one} textColor={theme.text.white}/>
+                </IconButtonDiv></h5>
+                <h5><IconButtonDiv data-tip="ROI in historic eth prices" id={'hist'} onClick={HandleCurrencyHistButton}>
+                    <StyledDollar/>
+                    <ReactTooltip html={true} effect={'solid'} backgroundColor={theme.ui.one} textColor={theme.text.white}/>
+                </IconButtonDiv></h5>
             </IconHolder>
         </CurrencyToggleContainer>
     )
@@ -43,6 +57,7 @@ const CurrencyToggleContainer = styled.div`
     height: 50px;
     text-align: left;
     padding: 0px 30px;
+    width: 100%;
 `
 const IconHolder = styled.div`
     display: flex;

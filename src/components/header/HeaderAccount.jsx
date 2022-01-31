@@ -24,10 +24,10 @@ const HeaderAccount = ({currentUser,setCurrentUser}) => {
 
     return (
         <HeaderAccountContainer>
-                <AccountButtonContainer user={currentUser}>
-                    <h3><ConnectButton user={currentUser} onClick={HandleAuthenticateClick}>{isAuthenticated ? currentUser : 'Connect'}</ConnectButton></h3>
+                <AccountButtonContainer user={currentUser.address}>
+                    <h3><ConnectButton user={currentUser.address} onClick={HandleAuthenticateClick}>{isAuthenticated ? currentUser.address : 'Connect'}</ConnectButton></h3>
                 </AccountButtonContainer>
-                <IconButtonDiv user={currentUser} onClick={HandleLogout}><StyledLogOut/></IconButtonDiv>
+                <IconButtonDiv user={currentUser.address} onClick={HandleLogout}><StyledLogOut/></IconButtonDiv>
         </HeaderAccountContainer>
     )
 }
@@ -37,7 +37,7 @@ const HeaderAccountContainer = styled.div`
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    margin: 0px 40px;
+    margin-right: 40px;
 `
 
 const AccountButtonContainer = styled.div`
@@ -46,7 +46,7 @@ const AccountButtonContainer = styled.div`
     justify-content: center;
     align-items: center;
     background-color: ${props => props.user ? 'none' : props.theme.colors.purple};
-    padding: 5px 40px;
+    padding: 5px 30px;
     border: ${props => props.user ? '2px solid '+props.theme.colors.purple : 'none'};
     border-radius: 4px;
     `

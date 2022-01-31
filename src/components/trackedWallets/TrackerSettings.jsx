@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Moralis from 'moralis';
 
-const TrackerSettings = () => {
+const TrackerSettings = ({currentUser}) => {
 
     const handleUserDataSave = async (e) => {
         var trackingMethods = {
@@ -24,12 +24,19 @@ const TrackerSettings = () => {
     }
     const checkboxHandler = (e) => {
         var inputType = e.target.id;
-        var inputValue = e.target.value;
-        setEmailToggle(inputValue);
+        console.log(!emailToggle)
+        setEmailToggle(!emailToggle);
     }
 
     const [emailInputField,setEmailInputField] = useState('');
     const [emailToggle,setEmailToggle] = useState(true);
+    useEffect(()=>{
+        if(currentUser){
+            setEmailInputField(currentUser.email.address);
+            console.log(currentUser.email.toggle);
+            setEmailToggle(currentUser.email.toggle);
+        }
+    },[currentUser])
 
   return (
     <TrackerSettingsContainer>
@@ -38,7 +45,7 @@ const TrackerSettings = () => {
             <InputContainer>
                 <h3>Email</h3><EmailInput onChange={labelInputHandler} value={emailInputField}/>
             </InputContainer>
-            <LabeledCheckbox><h3>Use Email</h3><StyledCheckbox type="checkbox" onChange={checkboxHandler} value={emailToggle}/> </LabeledCheckbox>
+            <LabeledCheckbox><h3>Use Email</h3><StyledCheckbox type="checkbox" onChange={checkboxHandler} checked={emailToggle}/> </LabeledCheckbox>
         </EmailSettingsContainer>
         <SaveWalletSettingsButton onClick={handleUserDataSave}>Save</SaveWalletSettingsButton>
     </TrackerSettingsContainer>
@@ -110,12 +117,12 @@ const SaveWalletSettingsButton = styled.div`
     align-items: center;
     justify-content: center;
     color: ${props => props.theme.text.white};
-    background-color: ${props => props.theme.colors.blue};
+    background-color: ${props => props.theme.colors.purple};
     border-radius: 4px;
     padding: 3px 10px;
     margin-left: 30px;
     :hover {
-        background-color: ${props => props.theme.colors.blueDark};
+        background-color: ${props => props.theme.colors.purpleDark};
         color: ${props => props.theme.text.white};
     }
 `

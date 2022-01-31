@@ -6,6 +6,7 @@ import {BrowserRouter, Route, Routes} from 'react-router-dom'
 import MainApp from './components/MainApp';
 import Header from './components/header/Header'
 import TrackedWalletsPage from './components/trackedWallets/TrackedWalletsPage';
+import Homepage from './components/homepage/Homepage';
 
 function App() {
 
@@ -13,7 +14,7 @@ function App() {
   const [currentEthPrice, setCurrentEthPrice] = useState('');
   const [trackedWallets, setTrackedWallets] = useState([]);
   const previousTrackedWallets = useRef([]);
-  const [currentPage, setCurrentPage] = useState('port_explorer');
+  const [currentPage, setCurrentPage] = useState('homepage');
 
 
   const { isAuthUndefined, isAuthenticated, user, logout } = useMoralis();
@@ -21,10 +22,19 @@ function App() {
     console.log('isAuthUndefined = '+isAuthUndefined);
     if(!isAuthUndefined){
       if(isAuthenticated){
-        var ethAddress = user.get("accounts")
-        setCurrentUser(ethAddress[0]);
+        var ethAddress = user.get("accounts");
+        var email = user.get("email");
+        var trackingEmail = user.get("trackingEmail");
+        setCurrentUser({
+          address: ethAddress[0],
+          email: {
+            address: email,
+            toggle: trackingEmail,
+          },
+        });
       }else{
-        setCurrentUser(false)
+        setCurrentUser(false);
+        setTrackedWallets([]);
       }
     }
   },[isAuthenticated])
@@ -62,6 +72,15 @@ function App() {
                 trackedWallets={trackedWallets}
                 setTrackedWallets={setTrackedWallets}
                 previousTrackedWallets={previousTrackedWallets}
+              />
+            </PageContainer>
+            <PageContainer visible={currentPage ==='homepage'}>
+              <Homepage
+                currentUser={currentUser}
+                currentEthPrice={currentEthPrice}
+                trackedWallets={trackedWallets}
+                setCurrentPage={setCurrentPage}
+                currentPage={currentPage}
               />
             </PageContainer>
         </FontSupply>
@@ -106,12 +125,13 @@ var getThemeInformation = (function(){
         one: darken(0.4, theme.uiColor)
       },
       colors: {
-          green: '#23EB87',
-          red: '#F06565',
-          blue: '#00DEFF',
-          blueDark: darken(.1,'#00DEFF'),
-          purple: '#8A2BE2',
-          text: '#939598'
+        green: '#23EB87',
+        red: '#F06565',
+        blue: '#00DEFF',
+        blueDark: darken(.1,'#00DEFF'),
+        purple: '#8A2BE2',
+        purpleDark: darken(.1,'#8A2BE2'),
+        text: '#939598'
       }
   }
 })();
