@@ -293,7 +293,7 @@ Moralis.Cloud.define("testEmail", async (request) => {
 
 Moralis.Cloud.job("notificationScheduler", async (request) => {
     
-    
+    const logger = Moralis.Cloud.getLogger();
     const userQuery = new Moralis.Query("User");
     userQuery.equalTo('trackingEmail', "true");
     const usersToEmail = await userQuery.find({useMasterKey:true});
@@ -401,3 +401,82 @@ Moralis.Cloud.define("notificationScheduler", async (request) => {
         }
     }
 })
+
+Moralis.Cloud.define("pullAssetData", async (request) => {
+    const logger = Moralis.Cloud.getLogger();
+    var token_id = request.params.token_id;
+    var token_address = request.params.token_address;
+    const fetchedData = await Moralis.Cloud.httpRequest({
+        url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=50`,
+        headers: {
+            'Accept': 'application/json',
+            'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+        }
+    })
+    logger.info(fetchedData.data);
+
+
+    return fetchedData;
+
+});
+Moralis.Cloud.define("pullOpenSeaCollections", async (request) => {
+    const logger = Moralis.Cloud.getLogger();
+    var address = request.params.address;
+
+    var walletData = []
+    var currentOffset = 0;
+    var pullData = true;
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    while(pullData){
+      const fetchedData = await Moralis.Cloud.httpRequest({
+          url: `https://api.opensea.io/api/v1/collections?asset_owner=${address}&offset=${currentOffset}&limit=50`,
+          headers: {
+              'Accept': 'application/json',
+              'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+          }
+      })
+      logger.info(fetchedData.data);
+      if(fetchedData.data.length <= 1){
+        pullData = false;
+      }else{
+        walletData = walletData.concat(fetchedData.data);
+        currentOffset += 50;
+        await sleep(600);
+      }
+    }
+    logger.info("made it through all "+walletData.length);
+
+    return walletData;
+
+});
+Moralis.Cloud.define("pullOpenSeaAssets", async (request) => {
+    const logger = Moralis.Cloud.getLogger();
+    var address = request.params.address;
+
+    var walletData = []
+    var currentOffset = 0;
+    var pullData = true;
+    const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    while(pullData){
+      const fetchedData = await Moralis.Cloud.httpRequest({
+          url: `https://api.opensea.io/api/v1/assets?owner=${address}&order_direction=desc&offset=${currentOffset}&limit=50`,
+          headers: {
+              'Accept': 'application/json',
+              'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+          }
+      })
+      logger.info(fetchedData.data);
+      if(fetchedData.data.assets.length <= 1){
+        pullData = false;
+      }else{
+        walletData = walletData.concat(fetchedData.data.assets);
+        currentOffset += 50;
+        await sleep(600);
+      }
+    }
+    logger.info("made it through all "+walletData.length);
+
+    return walletData;
+
+});
+

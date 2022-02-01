@@ -95,23 +95,37 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
     async function pullWalletAssets(walletID) {
       
       
-      var walletData = []
-      var currentOffset = 0;
-      var pullData = true;
+      // var walletData = []
+      // var currentOffset = 0;
+      // var pullData = true;
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-      setFetchStatus('Pulling Active NFTs');
-      while(pullData){
-        const options = {method: 'GET'};
-        var response = await fetch(`https://api.opensea.io/api/v1/assets?owner=${walletID}&order_direction=desc&offset=${currentOffset}&limit=50`, options);
-        var responseParsed = await response.json();
-        if(responseParsed.assets.length <= 1){
-          pullData = false;
-        }else{
-          walletData = walletData.concat(responseParsed.assets);
-          currentOffset += 50;
-          await sleep(600);
-        }
-      }
+      // setFetchStatus('Pulling Active NFTs');
+      // while(pullData){
+      //   const options = {
+      //     method: 'GET',
+      //     headers: {
+      //       'X-API-KEY': '13251e61da9545b6a58085a79f394144',
+      //       'Accept': 'application/json',
+      //     },
+      //   };
+      //   var response = await fetch(`https://api.opensea.io/api/v1/assets?owner=${walletID}&order_direction=desc&offset=${currentOffset}&limit=50`, options);
+      //   var responseParsed = await response.json();
+      //   if(responseParsed.assets.length <= 1){
+      //     pullData = false;
+      //   }else{
+      //     walletData = walletData.concat(responseParsed.assets);
+      //     currentOffset += 50;
+      //     await sleep(600);
+      //   }
+      // }
+      const params = {
+        address: walletID,
+      };
+      const walletData = await Moralis.Cloud.run("pullOpenSeaAssets",params);
+      if(!walletData){
+        return false;
+      };
+
       setFetchStatus('Pulling NFT transactions');
       console.log('Pulling nft transactions')
       // Pull all NFT transactions - used for seeing previous purchases
@@ -518,24 +532,29 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
     async function updateFloorPrices(){
   
       // Update Wallet Assets, only if erc721 token. ERC1155 fetched when assets were pulled from opensea
-      var floorData = [];
-      var currentOffset = 0;
-      var pullData = true;
-      while(pullData){
-        const options = {method: 'GET'};
-        const response = await fetch(`https://api.opensea.io/api/v1/collections?asset_owner=${walletID}&offset=${currentOffset}&limit=50`, options);
-        var responseData = await response.json();
+      // var floorData = [];
+      // var currentOffset = 0;
+      // var pullData = true;
+      // while(pullData){
+      //   const options = {method: 'GET'};
+      //   const response = await fetch(`https://api.opensea.io/api/v1/collections?asset_owner=${walletID}&offset=${currentOffset}&limit=50`, options);
+      //   var responseData = await response.json();
 
-        if(responseData.length <= 1){
-          pullData = false;
-        }else{
-          for(var i = 0;i<responseData.length;i++){
-            var floorObj = { collection_slug : responseData[i].slug, floor_price : responseData[i].stats.one_day_average_price}
-            floorData.push(floorObj);
-          }
-          currentOffset += 50;
-        }
-      }
+      //   if(responseData.length <= 1){
+      //     pullData = false;
+      //   }else{
+      //     for(var i = 0;i<responseData.length;i++){
+      //       var floorObj = { collection_slug : responseData[i].slug, floor_price : responseData[i].stats.one_day_average_price}
+      //       floorData.push(floorObj);
+      //     }
+      //     currentOffset += 50;
+      //   }
+      // }
+      const params = {
+        address: walletID,
+      };
+      const floorData = await Moralis.Cloud.run("pullOpenSeaCollections",params);
+      
       // Actually update walletAsset floor prices
       for(var i=0; i<walletAssets.length;i++){
         if(walletAssets[i].floor_price === ''){
@@ -584,12 +603,18 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
     // Helper Functions
   
     async function getDatafromToken(token_address,token_id){
-      const options = {method: 'GET'};
-      const response = await fetch(`https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=50`, options);
-      var walletData = await response.json();
-  
-      if(walletData.assets.length > 0){
-        return walletData.assets[0];
+      const params = {
+        token_address: token_address,
+        token_id: token_id,
+      };
+      const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      await sleep(300);
+      const walletData = await Moralis.Cloud.run("pullAssetData",params);
+      if(!walletData){
+        return false;
+      };
+      if(walletData.data.assets.length > 0){
+        return walletData.data.assets[0];
       }else return false
     }
   
