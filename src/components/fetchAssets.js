@@ -246,13 +246,11 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
             insertAssetData(nftTransactions[i],i,transactionValue, beginTime);
             ImportedNFTNum ++;
             setFetchStatus('Importing NFT #'+ImportedNFTNum);
-            console.log(ImportedNFTNum);
           }else{
             // Import any transactions that were sold
             await importSoldAssets(nftTransactions[i],i,transactionValue, beginTime);
             ImportedNFTNum ++;
             setFetchStatus('Importing NFT #'+ImportedNFTNum);
-            console.log(ImportedNFTNum);
           }
         }
       }
@@ -556,12 +554,13 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
       const floorData = await Moralis.Cloud.run("pullOpenSeaCollections",params);
       
       // Actually update walletAsset floor prices
+      console.log(floorData);
       for(var i=0; i<walletAssets.length;i++){
         if(walletAssets[i].floor_price === ''){
           var price = floorData.filter( data => {
-            return data.collection_slug === walletAssets[i].collection_slug; 
+            return data.slug === walletAssets[i].collection_slug; 
           });
-          walletAssets[i].floor_price = price.length > 0 ? price[0].floor_price : 'Nan';
+          walletAssets[i].floor_price = price.length > 0 ? price[0].stats.one_day_average_price : 'Nan';
         } 
       }
   

@@ -3,7 +3,7 @@ const confirmed = request.object.get("confirmed");
 if(confirmed){
     let to_address = request.object.get("to_address");
     let from_address = request.object.get("from_address");
-    let transaction_hash = request.object.get("hash");
+    let transaction_hash = request.object.get("transaction_hash");
     let token_id = request.object.get("token_id");
     let token_address = request.object.get("token_address");
     
@@ -45,6 +45,7 @@ if(confirmed){
                 thumbnail_pic: thumbnail_pic,
                 watchedAddress: watchedAddress,
                 purchaseType: purchaseType,
+                transactionHash: transaction_hash,
             };
             userRow.add("transactionNotifications",transactionNotification,{useMasterKey:true});
             try {
@@ -52,33 +53,6 @@ if(confirmed){
             } catch (err) {
                 logger.info(err);
             }
-            // var message = `
-            //     <style>
-            //         .thumbnail_pic{
-            //             display: flex;
-            //             flex-direction: row;
-            //             justify-content: center;
-            //             align-items: center;
-            //             width: 150px;
-            //         }
-            //     </style>
-            //     <div>
-            //         <h3>New Transaction</h3>
-            //     </div>
-            //     <div>
-            //         <img class='thumbnail_pic' src=${thumbnail_pic}></img>
-            //         ${watchedAddress} ${purchaseType} a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
-            //     </div>
-        
-            // `
-            // if(false){ // TODO: Chasnge variable back to emailToggle!!!!!
-            //     Moralis.Cloud.sendEmail({
-            //         to: email,
-            //         subject: 'New NFT transaction',
-            //         html: message,
-            //     },{useMasterKey:true});
-            //     logger.info('sent email');
-            // }
         
         }
     }
@@ -307,14 +281,14 @@ Moralis.Cloud.job("notificationScheduler", async (request) => {
 
         // Loop through and build email
         for(var j=0; j<unsentTransactions.length;j++){
-            const {collection_name, external_link, thumbnail_pic, watchedAddress, purchaseType} = unsentTransactions[j];
+            const {collection_name, external_link, thumbnail_pic, watchedAddress, purchaseType, transactionHash} = unsentTransactions[j];
             emailString += `
                 <div>
                     <h3>New Transaction</h3>
                 </div>
                 <div>
                     <img class='thumbnail_pic' src=${thumbnail_pic}></img>
-                    ${watchedAddress} ${purchaseType} a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
+                    ${watchedAddress} <a href='https://etherscan.io/tx/'${transactionHash}>${purchaseType}</a> a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
                 </div>
             `
         }
@@ -349,55 +323,6 @@ Moralis.Cloud.job("notificationScheduler", async (request) => {
                 logger.info(err);
             }
 
-        }
-    }
-})
-Moralis.Cloud.define("notificationScheduler", async (request) => {
-    
-    
-    const userQuery = new Moralis.Query("User");
-    userQuery.equalTo('trackingEmail', "true");
-    const usersToEmail = await userQuery.find({useMasterKey:true});
-    
-    logger.info(usersToEmail.length);
-    for(var i =0; i<usersToEmail.length;i++){
-        const email = usersToEmail[0].get("email");
-        const unsentTransactions = usersToEmail[0].get("transactionNotifications");
-        var emailString = '' 
-
-        for(var j=0; j<unsentTransactions.length;j++){
-            const {collection_name, external_link, thumbnail_pic, watchedAddress, purchaseType} = unsentTransactions[j];
-            emailString += `
-                <div>
-                    <h3>New Transaction</h3>
-                </div>
-                <div>
-                    <img class='thumbnail_pic' src=${thumbnail_pic}></img>
-                    ${watchedAddress} ${purchaseType} a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
-                </div>
-            `
-        }
-        
-        logger.info(email);
-        var beginEmailString = `
-            <style>
-                .thumbnail_pic{
-                    display: flex;
-                    flex-direction: row;
-                    justify-content: center;
-                    align-items: center;
-                    width: 100px;
-                }
-            </style>
-        `
-        var emailMessage = beginEmailString + emailString;
-        if(email){
-            Moralis.Cloud.sendEmail({
-                to: email,
-                subject: 'New NFT transaction',
-                html: emailMessage,
-            },{useMasterKey:true});
-            logger.info('sent email');
         }
     }
 })
