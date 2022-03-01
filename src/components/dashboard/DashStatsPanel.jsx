@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import {numberWithCommas} from '../numberWithCommas'
+import {numberWithCommas} from '../lib/numberWithCommas'
 
 const DashStatsPanel = ({activeAssets,currencyType,status,walletStats,currentEthPrice}) => {
 

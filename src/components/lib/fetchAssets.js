@@ -1,8 +1,9 @@
 import Moralis from "moralis";
+import { createNotification } from './createNotification'
 
 
 
-function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
+function fetchAssets(wallet_id,currentEthPrice,setFetchStatus,fetchStatus){
   return new Promise((resolve,reject)=>{
     
     var ALL_ASSETS = [];
@@ -254,6 +255,7 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
           }
         }
       }
+      await importSoldAssetsData();
     }
   
     async function getTransactionValue(transaction,i,incomingSoldPurchase,secondSold){
@@ -385,16 +387,16 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
         if(id == current_id && soldCurrentAsset && !imported){
   
           // Found purchase txn, create new sold asset
-          var tokenData = await getDatafromToken(transaction.token_address,transaction.token_id);
+          // var tokenData = await getDatafromToken(transaction.token_address,transaction.token_id);
           // console.log(tokenData)
   
           // Assign new asset properties
           var contract_type = transaction.contract_type;
-          var collection_name = tokenData ? tokenData.collection.name : '';
-          var collection_slug = tokenData ? tokenData.collection.slug: '';
-          var asset_name = tokenData ? tokenData.name: ''; 
-          var asset_thumbnail = tokenData ? tokenData.image_thumbnail_url: '';
-          var asset_permalink = tokenData ? tokenData.permalink : '';
+          var collection_name =  '';
+          var collection_slug =  '';
+          var asset_name =  ''; 
+          var asset_thumbnail =  '';
+          var asset_permalink =  '';
           var position = 'closed';
           var transactionType = nftTransactions[i].transactionType !== undefined ? nftTransactions[i].transactionType : transactionValue[1];
           var purchase_price = await getTransactionValue(nftTransactions[j],j,true);
@@ -421,6 +423,50 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
         }
       }
   
+    }
+
+    async function importSoldAssetsData(){
+
+      // Prepare params for getting data
+      // for(var i=0; i<soldAssets.length; i++){
+      //   var idArray = soldAssets[i].tokenFullID.split("/");
+      //    i==0 ? params.token_addresses += `${idArray[0]}` : params.token_addresses += `&asset_contract_addresses=${idArray[0]}`;
+      //    i==0 ? params.token_ids += `${idArray[1]}` : params.token_ids += `&token_ids=${idArray[1]}`;
+      // }
+      //Get data
+      var soldWalletData = await getDatafromToken(soldAssets)
+      // console.log(soldWalletData);
+      
+      // Loop through sold wallets and add data, or delete them if blacklisted
+      for(var i = 0; i<soldAssets.length; i++){
+
+        // Find matching data for the current asset
+        var assetData = soldWalletData.filter( token => {
+          return `${token.asset_contract.address}/${token.token_id}` === soldAssets[i].tokenFullID; 
+        });
+        console.log(soldAssets[i].tokenFullID);
+        console.log(assetData);
+      
+        // if(!assetData || assetData != undefined){
+        //   console.log('assetData length ='+assetData.length);
+        //   errorHandler('Fail to import sold wallet data')
+        //   return false;
+        // }
+        // else{
+          if(!checkBlacklist(assetData[0].collection.name)){
+            soldAssets[i].collection_name = soldWalletData ? assetData[0].collection.name : '';
+            soldAssets[i].collection_slug = soldWalletData ? assetData[0].collection.slug: '';
+            soldAssets[i].asset_name = soldWalletData ? assetData[0].name: ''; 
+            soldAssets[i].asset_thumbnail = soldWalletData ? assetData[0].image_thumbnail_url: '';
+            soldAssets[i].asset_permalink = soldWalletData ? assetData[0].permalink : '';
+          }else{
+            soldAssets.splice(i,1);
+            i--
+          }
+        // }
+
+      }
+
     }
   
     function updateTransactionQuantity(){
@@ -551,23 +597,31 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
       const params = {
         address: walletID,
       };
-      const floorData = await Moralis.Cloud.run("pullOpenSeaCollections",params);
+      var floorData;
+      try{
+        floorData = await Moralis.Cloud.run("pullOpenSeaCollections",params);
+      }catch(err){
+        errorHandler(err)
+      }
       
       // Actually update walletAsset floor prices
-      console.log(floorData);
-      for(var i=0; i<walletAssets.length;i++){
-        if(walletAssets[i].floor_price === ''){
-          var price = floorData.filter( data => {
-            return data.slug === walletAssets[i].collection_slug; 
-          });
-          walletAssets[i].floor_price = price.length > 0 ? price[0].stats.one_day_average_price : 'Nan';
-        } 
-      }
-  
-      // Update sold assets
-  
-      for(var i=0; i<soldAssets.length;i++){
-        // soldAssets[i].floor_price = '=ImportJSON("https://api.opensea.io/collection/"&$E24,"/collection/stats/floor_price","noHeaders")*1'
+      // console.log(floorData);
+      if(floorData && floorData !== undefined){
+
+        for(var i=0; i<walletAssets.length;i++){
+          if(walletAssets[i].floor_price === ''){
+            var price = floorData.filter( data => {
+              return data.slug === walletAssets[i].collection_slug; 
+            });
+            walletAssets[i].floor_price = price.length > 0 ? price[0].stats.one_day_average_price : 'Nan';
+          } 
+        }
+    
+        // Update sold assets
+    
+        for(var i=0; i<soldAssets.length;i++){
+          // soldAssets[i].floor_price = '=ImportJSON("https://api.opensea.io/collection/"&$E24,"/collection/stats/floor_price","noHeaders")*1'
+        }
       }
   
     }
@@ -601,19 +655,25 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
   
     // Helper Functions
   
-    async function getDatafromToken(token_address,token_id){
-      const params = {
-        token_address: token_address,
-        token_id: token_id,
-      };
+    async function getDatafromToken(params){
+      // const params = {
+      //   token_address: params.token_addresses,
+      //   token_id: params.token_ids,
+      // };
       const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+      var walletData;
       await sleep(300);
-      const walletData = await Moralis.Cloud.run("pullAssetData",params);
+      try{
+        walletData = await Moralis.Cloud.run("pullAssetData",{soldAssets:params});
+      }catch(err){
+        errorHandler(err);
+      }
+      console.log(walletData)
       if(!walletData){
         return false;
       };
-      if(walletData.data.assets.length > 0){
-        return walletData.data.assets[0];
+      if(walletData.length > 0){
+        return walletData;
       }else return false
     }
   
@@ -715,6 +775,11 @@ function fetchAssets(wallet_id,currentEthPrice,setFetchStatus){
 
 
       return returnArray;
+    }
+
+    function errorHandler(error){
+      createNotification('error',`Uh oh! Ran into an error at ${fetchStatus}. Error =  ${error}`);
+      reject();
     }
 
   // end of promise

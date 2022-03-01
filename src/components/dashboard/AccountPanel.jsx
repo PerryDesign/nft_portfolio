@@ -22,7 +22,8 @@ const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMe
 
 
     var firstTransactionDate = new Date(walletMetaData.first_transaction);
-    var firstTransaction = walletMetaData.first_transaction == '00/00/00' ? '00/00/00' : firstTransactionDate.getDate()+'/'+firstTransactionDate.getDay()+'/'+firstTransactionDate.getFullYear()
+    var firstTransaction = walletMetaData.first_transaction == '00/00/00' ? '00/00/00' : firstTransactionDate.getMonth()+'/'+firstTransactionDate.getDate()+'/'+firstTransactionDate.getFullYear()
+    // var firstTransaction = firstTransactionDate;
     return (
         <AccountPanelContainer>
             <ProPicContainer>
@@ -35,6 +36,7 @@ const AccountPanel = ({activeAssets,currencyType,setCurrencyType,status,walletMe
                         setTrackedWallets={setTrackedWallets}
                         previousTrackedWallets={previousTrackedWallets}
                         subscribed={subscribed}
+                        walletMetaData={walletMetaData}
                     />
                 </NameSubscribeDiv>
             </ProPicContainer>

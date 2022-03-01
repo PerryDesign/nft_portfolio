@@ -2,10 +2,11 @@ import React, {useState, useEffect} from 'react'
 import styled from 'styled-components'
 import Dashboard from './dashboard/Dashboard'
 import ResultsTable from './ResultsTable'
-import {fetchAssets} from './fetchAssets'
-import { getWalletStats } from './getWalletStats'
+import {fetchAssets} from './lib/fetchAssets'
+import { getWalletStats } from './lib/getWalletStats'
 import { useMoralis } from "react-moralis"
 import Moralis from 'moralis'
+import { createNotification } from './lib/createNotification'
 
 
 const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setTrackedWallets,previousTrackedWallets}) => {
@@ -29,12 +30,13 @@ const MainApp = ({currentUser,setCurrentUser,currentEthPrice,trackedWallets,setT
             setActiveAssets(WALLET_ASSETS_TEMP);
             setWalletMetaData(WALLET_METADATA_TEMP);
             setWalletStats(WALLET_STATS_TEMP);
-            fetchAssets(activeWalletID,currentEthPrice,setFetchStatus).then((assets)=>{
+            fetchAssets(activeWalletID,currentEthPrice,setFetchStatus,fetchStatus).then((assets)=>{
                 setStatus('fetched')
                 setActiveAssets(assets[0]);
                 setWalletMetaData(assets[1]);
                 var stats = getWalletStats(assets[0],currentEthPrice,useTransfersInCalc,trackedWallets,activeWalletID);
                 console.log(stats);
+                createNotification('success',`Succesfully imported ${assets[1].opensea_username}'s wallet.`)
                 setWalletStats(stats);
             });
         } 

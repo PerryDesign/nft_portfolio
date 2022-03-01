@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import TrackerSettings from './TrackerSettings';
-import { subscribeWallet, unsubscribeWallet } from '../walletSubscription'
+import { subscribeWallet, unsubscribeWallet } from '../lib/walletSubscription'
 import Moralis from 'moralis';
+import { createNotification } from '../lib/createNotification'
 
 
 const TrackedWalletsPage = ({currentUser,currentEthPrice,trackedWallets,setTrackedWallets,previousTrackedWallets}) => {
@@ -19,8 +20,8 @@ const TrackedWalletsPage = ({currentUser,currentEthPrice,trackedWallets,setTrack
     }
     const handleTestSend = async (e) => {
         var address = e.target.id;
-        console.log('trying to send email');
-        const email = await Moralis.Cloud.run("notificationScheduler");
+        console.log('notification?');
+        createNotification('error','this is a test!');
     }
 
 
@@ -36,8 +37,8 @@ const TrackedWalletsPage = ({currentUser,currentEthPrice,trackedWallets,setTrack
                     )
                 })}
             </TrackedWalletsContainer>
-            {/* <button onClick={handleTestEmail}/>
-            <button onClick={handleTestSend}/> */}
+            {/* <button onClick={handleTestEmail}/> */}
+            <button onClick={handleTestSend}/>
         </TrackedWalletsPageContainer>
     );
 };

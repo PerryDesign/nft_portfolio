@@ -1,14 +1,14 @@
 import React, {useEffect, useState} from 'react'
 import styled from 'styled-components'
 import { useMoralis } from "react-moralis"
-import { subscribeWallet, unsubscribeWallet } from '../walletSubscription'
+import { subscribeWallet, unsubscribeWallet } from '../lib/walletSubscription'
 
-const SubscribeToWallet = ({activeWalletID,trackedWallets,setTrackedWallets,subscribed,previousTrackedWallets}) => {
+const SubscribeToWallet = ({activeWalletID,trackedWallets,setTrackedWallets,subscribed,previousTrackedWallets,walletMetaData}) => {
 
 
     const { isAuthUndefined, isAuthenticated, account, user } = useMoralis();
     const handleSubscribe = async (e) => {
-        await subscribeWallet(activeWalletID,setTrackedWallets,previousTrackedWallets)
+        await subscribeWallet(activeWalletID,setTrackedWallets,previousTrackedWallets,walletMetaData.opensea_username)
         // if(activeWalletID){
         //     var address = activeWalletID.toLowerCase();
         //     const params = {

@@ -3,10 +3,14 @@ import styled, {them, ThemeProvider} from 'styled-components';
 import { lighten, darken } from 'polished'
 import { useMoralis } from "react-moralis";
 import {BrowserRouter, Route, Routes} from 'react-router-dom'
+import {ReactNotifications} from 'react-notifications-component'
+import 'react-notifications-component/dist/theme.css'
+
 import MainApp from './components/MainApp';
 import Header from './components/header/Header'
 import TrackedWalletsPage from './components/trackedWallets/TrackedWalletsPage';
 import Homepage from './components/homepage/Homepage';
+import Sidebar from './components/sidebar/Sidebar';
 
 function App() {
 
@@ -46,15 +50,22 @@ function App() {
 
   return (
     <ThemeProvider theme={getThemeInformation}>
-        <FontSupply>
-            <Header
-                currentUser={currentUser}
-                setCurrentUser={setCurrentUser}
-                currentEthPrice={currentEthPrice}
-                setCurrentEthPrice={setCurrentEthPrice}
-                setCurrentPage={setCurrentPage}
-                currentPage={currentPage}
-            />
+    <FontSupply>
+        <ReactNotifications/>
+        <AppWrapper>
+          <Header
+              currentUser={currentUser}
+              setCurrentUser={setCurrentUser}
+              currentEthPrice={currentEthPrice}
+              setCurrentEthPrice={setCurrentEthPrice}
+              setCurrentPage={setCurrentPage}
+              currentPage={currentPage}
+          />
+          {/* <Sidebar
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+          /> */}
+          <PagesWrapper>
             <PageContainer visible={currentPage ==='port_explorer'}>
               <MainApp
                 currentUser={currentUser}
@@ -83,13 +94,27 @@ function App() {
                 currentPage={currentPage}
               />
             </PageContainer>
-        </FontSupply>
-      </ThemeProvider>
+          </PagesWrapper>
+        </AppWrapper>
+    </FontSupply>
+    </ThemeProvider>
   );
 }
 
 const PageContainer = styled.div`
   display: ${props => props.visible ? 'flex' : 'none'};
+  flex-direction: column;
+  align-items: center;
+`
+const AppWrapper = styled.div`
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  position: relative;
+`
+const PagesWrapper = styled.div`
+  display: flex;
   flex-direction: column;
   align-items: center;
 `
@@ -143,9 +168,12 @@ const FontSupply = styled.div`
   font-family: "Montserrat", sans-serif;
 
   height: 100%;
-  position: absolute;
-  left: 0;
-  width: 100%;
+  /* position: absolute;
+  left: 0; */
+  /* width: 100%; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   background-color: ${props => props.theme.background.back};
 
   & h1 {
@@ -195,5 +223,6 @@ const FontSupply = styled.div`
     text-decoration: none;
   }
 `;
+
 
 export default App

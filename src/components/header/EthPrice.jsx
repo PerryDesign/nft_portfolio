@@ -2,7 +2,7 @@ import React, {useEffect} from 'react'
 import styled from 'styled-components'
 import Moralis from "moralis";
 import { useMoralis } from "react-moralis";
-import {numberWithCommas} from '../numberWithCommas'
+import {numberWithCommas} from '../lib/numberWithCommas'
 
 const EthPrice = ({currentEthPrice,setCurrentEthPrice}) => {
     const { Moralis, isInitialized, isInitializing } = useMoralis();

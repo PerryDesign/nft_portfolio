@@ -20,11 +20,12 @@ export async function unsubscribeWallet(activeWalletID,setTrackedWallets,previou
     }
 }
 
-export async function subscribeWallet(activeWalletID,setTrackedWallets,previousTrackedWallets){
+export async function subscribeWallet(activeWalletID,setTrackedWallets,previousTrackedWallets,opensea_username){
     if(activeWalletID){
         var address = activeWalletID.toLowerCase();
         const params = {
             address: address,
+            opensea_username: opensea_username,
         };
         const watch = await Moralis.Cloud.run("watchAddress", params);
         // console.log(watch)

@@ -1,8 +1,15 @@
 import { ColumnFilter } from "./ColumnFilter"
 import styled from "styled-components"
-import {numberWithCommas} from './numberWithCommas'
+import {numberWithCommas} from './lib/numberWithCommas'
 
-
+function getPurchasePrice(val){
+    var valid = /[a-z]/i.test(val) ? false : true;
+    if(valid){
+        return parseFloat(val).toFixed(2);
+    }else{
+        return val;
+    }
+}
 
 export const COLUMNS = [
     {
@@ -44,7 +51,7 @@ export const COLUMNS = [
         accessor: 'purchase_price',
         Cell: ({ row }) => (
             <CellContainerNum>
-                <a href={'https://etherscan.io/tx/'+row.original.purchase_transaction_hash} target="_blank" rel="noopener noreferrer"> {row.original.purchase_price !== undefined ? parseFloat(row.original.purchase_price).toFixed(2) : 0} </a>
+                <a href={'https://etherscan.io/tx/'+row.original.purchase_transaction_hash} target="_blank" rel="noopener noreferrer"> {row.original.purchase_price !== undefined ? getPurchasePrice(row.original.purchase_price) : 0} </a>
             </CellContainerNum>
         )
     },

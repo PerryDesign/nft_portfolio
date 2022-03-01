@@ -1,67 +1,6 @@
-Moralis.Cloud.afterSave("EthNFTTransfers", async function (request) {
-const confirmed = request.object.get("confirmed");
-if(confirmed){
-    let to_address = request.object.get("to_address");
-    let from_address = request.object.get("from_address");
-    let transaction_hash = request.object.get("transaction_hash");
-    let token_id = request.object.get("token_id");
-    let token_address = request.object.get("token_address");
-    
-    const countQuery = new Moralis.Query("WatchedEthAddress");
-    countQuery.containedIn("address", [to_address,from_address]);
-    const matchedAddresses = await countQuery.find();
-    // Check to see if follower follows any of the match transaction addresses
-    logger.info(matchedAddresses.length);
-    for(var i = 0;i<matchedAddresses.length;i++){
-        const followerArray = matchedAddresses[i].get("followers");
-        // Pull transaction data
-        var watchedAddress = matchedAddresses[i].get("address");
-        var purchaseType = from_address == watchedAddress ? 'sold' : 'bought';
-        const fetchedData = await Moralis.Cloud.httpRequest({
-            url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=20`,
-            headers: {
-                'Accept': 'application/json',
-                'X-API-KEY': '13251e61da9545b6a58085a79f394144'
-            }
-        })
-        // GlYS7qfnNNjyHpbVVLpjOoX5
-        var nftData = fetchedData.data;
-        var collection_name = nftData.assets[0].name;
-        var external_link = nftData.assets[0].permalink;
-        var thumbnail_pic = nftData.assets[0].image_thumbnail_url;
-        logger.info(collection_name+'   '+external_link);
-        logger.info(followerArray.length);
 
-        // Add emails notifications to all users following 
-        for(var j=0; j<followerArray.length;j++){
-            const userQuery = new Moralis.Query("User");
-            const userRow = await userQuery.get(followerArray[j],{useMasterKey:true});
-            
-            logger.info(followerArray[j])
-            
-            const transactionNotification = {
-                collection_name: collection_name,
-                external_link: external_link,
-                thumbnail_pic: thumbnail_pic,
-                watchedAddress: watchedAddress,
-                purchaseType: purchaseType,
-                transactionHash: transaction_hash,
-            };
-            userRow.add("transactionNotifications",transactionNotification,{useMasterKey:true});
-            try {
-                await userRow.save(null, {useMasterKey: true});
-            } catch (err) {
-                logger.info(err);
-            }
-        
-        }
-    }
-}
-
-
-});
-
-
+// ***** USER ACTIONS ******
+////////////////////////////
 Moralis.Cloud.define("adjustUserSettings", async (request) => {
 
     let email = request.params.email;
@@ -89,28 +28,39 @@ Moralis.Cloud.define("unwatchAddress", async (request) => {
     let user = request.user;
     const logger = Moralis.Cloud.getLogger();
 
-    const results = await Moralis.Cloud.run("unwatchEthAddress", {
-        address: address,
-    },{useMasterKey:true});
+    const countQuery = new Moralis.Query("WatchedEthAddress");
+    countQuery.equalTo("address", address);
+    const watchedAddy = await countQuery.first();
+    const watchedAddyFollowers = watchedAddy.get("followers");
 
-    logger.info(`User - ${user} Unsubscribed from ${address}`)
-    
-    var currentTrackedWallets = user.get("watchedEthWallets")
+
+    // If user is only follower, unwatch address
+    if(watchedAddyFollowers.length === 1){
+        
+        const results = await Moralis.Cloud.run("unwatchEthAddress", {
+            address: address,
+        },{useMasterKey:true});
+
+    }
+
+    // Remove Address from this user object
+    var currentTrackedWallets = user.get("watchedEthWallets");
     currentTrackedWallets.length == 1 ?user.set("watchedEthWallets",[]) : user.remove("watchedEthWallets",address);
-
+    
     try {
         await user.save(null, { useMasterKey: true });
     } catch (err) {
         logger.info(err);
     }
+    logger.info(`User - ${user} Unsubscribed from ${address}`)
     return "Success?"
 })
-
 Moralis.Cloud.define("watchAddress", async (request) => {
     
     const logger = Moralis.Cloud.getLogger();
   
     let address = request.params.address;
+    let opensea_username = request.params.opensea_username;
     let user = request.user;
 
     let userId = user.id;
@@ -166,6 +116,7 @@ Moralis.Cloud.define("watchAddress", async (request) => {
         // logger.info(row_object);
         var singleFollowerArray = [userId];
         row_object.set("followers", singleFollowerArray);
+        row_object.set("opensea_username", opensea_username);
         // save it
         try {
             await row_object.save();
@@ -217,54 +168,71 @@ Moralis.Cloud.define("watchAddress", async (request) => {
     requireUser: true
 });
 
-
-Moralis.Cloud.define("testEmail", async (request) => {
-    const logger = Moralis.Cloud.getLogger();
-
-    var watchedAddress = 'testtt';
-    var token_address = '0x47bd71b482b27ebdb57af6e372cab46c7280bf44';
-    var token_id = '6114';
-    // await getNFTData('6114','0x47bd71b482b27ebdb57af6e372cab46c7280bf44');
-    const fetchedData = await Moralis.Cloud.httpRequest({
-        url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=20`,
-        headers: {
-            'Accept': 'application/json',
-            'X-API-KEY': '13251e61da9545b6a58085a79f394144'
-        }
-    })
-
-    // GlYS7qfnNNjyHpbVVLpjOoX5
-    var nftData = fetchedData.data;
-    var collection_name = nftData.assets[0].name;
-    var external_link = nftData.assets[0].permalink;
-    var thumbnail_pic = nftData.assets[0].image_thumbnail_url;
-    logger.info(collection_name+'   '+external_link);
-
-    // Send emails to everyone who follows wallet
-    const userQuery = new Moralis.Query("User");
-    const userRow = await userQuery.get('GlYS7qfnNNjyHpbVVLpjOoX5',{useMasterKey:true});
-    const transactionNotification = {
-        collection_name: collection_name,
-        external_link: external_link,
-        thumbnail_pic: thumbnail_pic,
-        watchedAddress: watchedAddress,
-    };
-    logger.info(transactionNotification);
-    logger.info(userRow.get("trackingEmail"));
-    userRow.add("transactionNotifications",transactionNotification,{useMasterKey:true});
-    try {
-        await userRow.save(null, {useMasterKey: true});
-    } catch (err) {
-        logger.info(err);
-    }
-
-
-
-    return "Sent???"
-
+// ***** JOB ACTIONS ******
+////////////////////////////
+Moralis.Cloud.afterSave("EthNFTTransfers", async function (request) {
+const confirmed = request.object.get("confirmed");
+if(confirmed){
+    let to_address = request.object.get("to_address");
+    let from_address = request.object.get("from_address");
+    let transaction_hash = request.object.get("transaction_hash");
+    let token_id = request.object.get("token_id");
+    let token_address = request.object.get("token_address");
     
-});
+    const countQuery = new Moralis.Query("WatchedEthAddress");
+    countQuery.containedIn("address", [to_address,from_address]);
+    const matchedAddresses = await countQuery.find();
+    // Check to see if follower follows any of the match transaction addresses
+    logger.info(matchedAddresses.length);
+    for(var i = 0;i<matchedAddresses.length;i++){
+        const followerArray = matchedAddresses[i].get("followers");
+        const opensea_username = matchedAddresses[i].get("opensea_username");
 
+        // Pull transaction data from OpenSea
+        var watchedAddress = matchedAddresses[i].get("address");
+        var purchaseType = from_address == watchedAddress ? 'sold' : 'bought';
+        const fetchedData = await Moralis.Cloud.httpRequest({
+            url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=20`,
+            headers: {
+                'Accept': 'application/json',
+                'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+            }
+        })
+        var nftData = fetchedData.data;
+        var collection_name = nftData.assets[0].name;
+        var external_link = nftData.assets[0].permalink;
+        var thumbnail_pic = nftData.assets[0].image_thumbnail_url;
+        logger.info(collection_name+'   '+external_link);
+
+        // Add emails notifications to all users following 
+        for(var j=0; j<followerArray.length;j++){
+            const userQuery = new Moralis.Query("User");
+            const userRow = await userQuery.get(followerArray[j],{useMasterKey:true});
+            
+            logger.info(followerArray[j])
+            
+            const transactionNotification = {
+                collection_name: collection_name,
+                external_link: external_link,
+                thumbnail_pic: thumbnail_pic,
+                watchedAddress: watchedAddress,
+                purchaseType: purchaseType,
+                transactionHash: transaction_hash,
+                opensea_username: opensea_username,
+            };
+            userRow.add("transactionNotifications",transactionNotification,{useMasterKey:true});
+            try {
+                await userRow.save(null, {useMasterKey: true});
+            } catch (err) {
+                logger.info(err);
+            }
+        
+        }
+    }
+}
+
+
+});
 Moralis.Cloud.job("notificationScheduler", async (request) => {
     
     const logger = Moralis.Cloud.getLogger();
@@ -281,15 +249,15 @@ Moralis.Cloud.job("notificationScheduler", async (request) => {
 
         // Loop through and build email
         for(var j=0; j<unsentTransactions.length;j++){
-            const {collection_name, external_link, thumbnail_pic, watchedAddress, purchaseType, transactionHash} = unsentTransactions[j];
+            const {collection_name, external_link, thumbnail_pic, watchedAddress, purchaseType, transactionHash, opensea_username} = unsentTransactions[j];
             emailString += `
                 <div>
                     <h3>New Transaction</h3>
                 </div>
-                <div>
+                <message_container>
                     <img class='thumbnail_pic' src=${thumbnail_pic}></img>
-                    ${watchedAddress} <a href='https://etherscan.io/tx/'${transactionHash}>${purchaseType}</a> a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
-                </div>
+                    ${opensea_username ? opensea_username : watchedAddress} <a href='https://etherscan.io/tx/'${transactionHash}>${purchaseType}</a> a ${collection_name}. Find it on <a href='${external_link}'>OpenSea.
+                </message_container>
             `
         }
         
@@ -302,6 +270,12 @@ Moralis.Cloud.job("notificationScheduler", async (request) => {
                     justify-content: center;
                     align-items: center;
                     width: 50px;
+                };
+                .message_container{
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    align-items: center;
                 }
             </style>
         `
@@ -327,21 +301,59 @@ Moralis.Cloud.job("notificationScheduler", async (request) => {
     }
 })
 
+// ***** FETCHING ACTIONS ******
+////////////////////////////
 Moralis.Cloud.define("pullAssetData", async (request) => {
     const logger = Moralis.Cloud.getLogger();
-    var token_id = request.params.token_id;
-    var token_address = request.params.token_address;
-    const fetchedData = await Moralis.Cloud.httpRequest({
-        url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=50`,
-        headers: {
-            'Accept': 'application/json',
-            'X-API-KEY': '13251e61da9545b6a58085a79f394144'
-        }
-    })
-    logger.info(fetchedData.data);
+    var soldAssets = request.params.soldAssets;
+    var paramsArray= [];
+    var params = {
+        token_addresses: '',
+        token_ids: '',
+    };
+    var returnData = []
+
+    logger.info("soldAssets"+soldAssets.length);
+    // Loop through and make params in batches of 30
+    var newArray = true;
+    for(var i=0; i<soldAssets.length; i++){
+        var idArray = soldAssets[i].tokenFullID.split("/");
+        newArray ? params.token_addresses += `${idArray[0]}` : params.token_addresses += `&asset_contract_addresses=${idArray[0]}`;
+        newArray ? params.token_ids += `${idArray[1]}` : params.token_ids += `&token_ids=${idArray[1]}`;
+        newArray = false;
+        if(((i+1) % 30) == 0 || soldAssets.length-1 == i) {
+            logger.info('pushing params, i = '+i);
+            paramsArray.push(params);
+            params = {
+                token_addresses: '',
+                token_ids: '',
+            };
+            newArray = true;
+        };
+    }
+
+    logger.info('paramsArray'+paramsArray.length);
+    // Pull asset data in batches of 30
+    for(var i =0; i< paramsArray.length;i++){
+        
+        logger.info(paramsArray[i].token_ids);
+        var token_id = paramsArray[i].token_ids;
+        var token_address = paramsArray[i].token_addresses;
+        const fetchedData = await Moralis.Cloud.httpRequest({
+            url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_addresses=${token_address}&order_direction=desc&offset=0&limit=50`,
+            headers: {
+                'Accept': 'application/json',
+                'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+            }
+        });
+        var concatArray = returnData.concat(fetchedData.data.assets);
+        returnData = concatArray;
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+        await sleep(300);
+    }
 
 
-    return fetchedData;
+    return returnData;
 
 });
 Moralis.Cloud.define("pullOpenSeaCollections", async (request) => {
@@ -360,7 +372,6 @@ Moralis.Cloud.define("pullOpenSeaCollections", async (request) => {
               'X-API-KEY': '13251e61da9545b6a58085a79f394144'
           }
       })
-      logger.info(fetchedData.data);
       if(fetchedData.data.length <= 1){
         pullData = false;
       }else{
@@ -369,7 +380,7 @@ Moralis.Cloud.define("pullOpenSeaCollections", async (request) => {
         await sleep(600);
       }
     }
-    logger.info("made it through all "+walletData.length);
+    // logger.info("made it through all "+walletData.length);
 
     return walletData;
 
@@ -399,9 +410,61 @@ Moralis.Cloud.define("pullOpenSeaAssets", async (request) => {
         await sleep(600);
       }
     }
-    logger.info("made it through all "+walletData.length);
+    // logger.info("made it through all "+walletData.length);
 
     return walletData;
 
 });
 
+// ***** TESTING ACTIONS ******
+////////////////////////////
+Moralis.Cloud.define("testEmail", async (request) => {
+    const logger = Moralis.Cloud.getLogger();
+
+    var watchedAddress = 'testtt';
+    var transaction_hash = '0x002b6f8468c6b06668863ee0133e4c315202251376ea313381c56e3f21312c9c';
+    var token_address = '0x47bd71b482b27ebdb57af6e372cab46c7280bf44';
+    var token_id = '6114';
+    var opensea_username = 'Datamosh';
+    // await getNFTData('6114','0x47bd71b482b27ebdb57af6e372cab46c7280bf44');
+    const fetchedData = await Moralis.Cloud.httpRequest({
+        url: `https://api.opensea.io/api/v1/assets?token_ids=${token_id}&asset_contract_address=${token_address}&order_direction=desc&offset=0&limit=20`,
+        headers: {
+            'Accept': 'application/json',
+            'X-API-KEY': '13251e61da9545b6a58085a79f394144'
+        }
+    })
+
+    // GlYS7qfnNNjyHpbVVLpjOoX5
+    var nftData = fetchedData.data;
+    var collection_name = nftData.assets[0].name;
+    var external_link = nftData.assets[0].permalink;
+    var thumbnail_pic = nftData.assets[0].image_thumbnail_url;
+    logger.info(collection_name+'   '+external_link);
+
+    // Send emails to everyone who follows wallet
+    const userQuery = new Moralis.Query("User");
+    const userRow = await userQuery.get('GlYS7qfnNNjyHpbVVLpjOoX5',{useMasterKey:true});
+    const transactionNotification = {
+        collection_name: collection_name,
+        external_link: external_link,
+        thumbnail_pic: thumbnail_pic,
+        watchedAddress: watchedAddress,
+        transactionHash: transaction_hash,
+        opensea_username: opensea_username,
+    };
+    logger.info(transactionNotification);
+    logger.info(userRow.get("trackingEmail"));
+    userRow.add("transactionNotifications",transactionNotification,{useMasterKey:true});
+    try {
+        await userRow.save(null, {useMasterKey: true});
+    } catch (err) {
+        logger.info(err);
+    }
+
+
+
+    return "Sent???"
+
+    
+});
